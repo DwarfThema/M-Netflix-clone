@@ -34,45 +34,53 @@ const Box = styled(motion.div)`
 `;
 
 const box = {
-  initial: {
-    x: 500,
+  initial: (back: boolean) => ({
+    x: back ? 500 : -500,
     opacity: 0,
     scale: 0,
-  },
+    transition: { duration: 0.3 },
+  }),
   animate: {
     x: 0,
     opacity: 1,
     scale: 1,
+    transition: { duration: 0.3 },
   },
-  exit: {
-    x: -500,
+  exit: (back: boolean) => ({
+    x: back ? -500 : 500,
     opacity: 0,
     scale: 0,
-  },
+    transition: { duration: 0.3 },
+  }),
 };
 
 function App() {
   const [visible, setVisible] = useState(1);
-  const nextPlease = () => setVisible((prev) => (prev === 10 ? 1 : prev + 1));
+  const [back, setback] = useState(false);
+  const nextPlease = () => {
+    setback(false);
+    setVisible((prev) => (prev === 10 ? 1 : prev + 1));
+  };
+  const prevPlease = () => {
+    setback(true);
+    setVisible((prev) => (prev === 1 ? 10 : prev - 1));
+  };
   return (
     <Wrapper>
-      <AnimatePresence>
-        (
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) =>
-          i === visible ? (
-            <Box
-              key={i}
-              variants={box}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              {i}
-            </Box>
-          ) : null
-        )}
+      <AnimatePresence exitBeforeEnter custom={back}>
+        <Box
+          custom={back}
+          key={visible}
+          variants={box}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          {visible}
+        </Box>
       </AnimatePresence>
-      <button onClick={nextPlease}>click</button>
+      <button onClick={nextPlease}>next</button>
+      <button onClick={prevPlease}>prev</button>
     </Wrapper>
   );
 }
