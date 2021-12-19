@@ -7,8 +7,6 @@ import { createGlobalStyle } from "styled-components";
 import { theme } from "./theme";
 import { QueryClient, QueryClientProvider } from "react-query";
 
-const API_KEY = "3a74fd88ff1eacb2c32ae9eaaef00278";
-
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
 html, body, div, span, applet, object, iframe,
@@ -64,8 +62,9 @@ table {
 body {
   font-weight: 300;
   font-family: 'Source Sans Pro', sans-serif;
-  color:black;
+  color:${(props) => props.theme.white.darker};
   line-height: 1.2;
+  background-color: black;
   
 }
 a {
