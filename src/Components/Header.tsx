@@ -1,20 +1,41 @@
 import { Link, useMatch } from "react-router-dom";
 import styled from "styled-components";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
 
 const Nav = styled.nav`
+=======
+import { motion, useAnimation, useViewportScroll } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useAnimatedState } from "framer-motion/types/animation/use-animated-state";
+
+const Nav = styled(motion.div)`
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: fixed;
   width: 100%;
+<<<<<<< HEAD
   top: 0;
   background-color: black;
+=======
+  background-color: black;
+  top: 0;
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
   font-size: 14px;
   padding: 20px 60px;
   color: white;
 `;
 
+<<<<<<< HEAD
+=======
+const navVariants = {
+  top: { backgroundColor: "rgba(0,0,0,0)" },
+  scroll: { backgroundColor: "rgba(0,0,0,1)" },
+};
+
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
 const Col = styled.div`
   display: flex;
   align-items: center;
@@ -51,11 +72,34 @@ const Item = styled.li`
 
 const Search = styled.span`
   color: white;
+<<<<<<< HEAD
+=======
+  display: flex;
+  align-items: center;
+  position: relative;
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
   svg {
     height: 25px;
   }
 `;
 
+<<<<<<< HEAD
+=======
+const Input = styled(motion.input)`
+  transform-origin: right center;
+  position: absolute;
+  left: -150;
+  right: 0px;
+  padding: 5px 10px;
+  padding-left: 40px;
+  z-index: -1;
+  color: white;
+  font-size: 16px;
+  background-color: transparent;
+  border: 1px solid ${(props) => props.theme.white.lighter};
+`;
+
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
 const Circle = styled(motion.span)`
   position: absolute;
   width: 5px;
@@ -83,8 +127,42 @@ const logoVariants = {
 function Header() {
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("/tv");
+<<<<<<< HEAD
   return (
     <Nav>
+=======
+  const [searchOpen, setSerchOpen] = useState(false);
+  const inputAnimation = useAnimation();
+  const navAnimation = useAnimation();
+  const { scrollY } = useViewportScroll();
+
+  const toggleSearch = () => {
+    if (searchOpen) {
+      inputAnimation.start({
+        scaleX: 0,
+      });
+    } else {
+      inputAnimation.start({
+        scaleX: 1,
+      });
+    }
+    setSerchOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    scrollY.onChange(() => {
+      /* console.log(scrollY.get()) */
+      if (scrollY.get() > 80) {
+        navAnimation.start("scroll");
+      } else {
+        navAnimation.start("top");
+      }
+    });
+  }, [scrollY, navAnimation]);
+
+  return (
+    <Nav variants={navVariants} animate={navAnimation} initial={"top"}>
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
       <Col>
         <Logo
           variants={logoVariants}
@@ -100,19 +178,40 @@ function Header() {
         <Items>
           <Item>
             <Link to="/">
+<<<<<<< HEAD
               Home {homeMatch ? <Circle layoutId="1" /> : null}
+=======
+              Home {homeMatch ? <Circle layoutId="Circle" /> : null}
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
             </Link>
           </Item>
           <Item>
             <Link to="/tv">
+<<<<<<< HEAD
               Tv Show{tvMatch ? <Circle layoutId="1" /> : null}
+=======
+              Tv Show{tvMatch ? <Circle layoutId="Circle" /> : null}
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
             </Link>
           </Item>
         </Items>
       </Col>
       <Col>
         <Search>
+<<<<<<< HEAD
           <svg
+=======
+          <Input
+            initial={{ scaleX: 0 }}
+            animate={inputAnimation}
+            transition={{ type: "linear" }}
+            placeholder="Search for Movie & TvShow"
+          />
+          <motion.svg
+            onClick={toggleSearch}
+            animate={{ x: searchOpen ? -215 : 0 }}
+            transition={{ type: "linear" }}
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +221,11 @@ function Header() {
               d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
               clipRule="evenodd"
             ></path>
+<<<<<<< HEAD
           </svg>
+=======
+          </motion.svg>
+>>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
         </Search>
       </Col>
     </Nav>
