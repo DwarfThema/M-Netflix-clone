@@ -58,7 +58,23 @@ const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-position: center, center;
   height: 170px;
   margin-bottom: 5px;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-style: center right;
+  }
+  /* 맨 첫번째 맨 마지막 슬라이더들는 특정 origin 을 갖고 transform 한다 */
 `;
+
+const BoxVariants = {
+  normal: { scale: 1 },
+  hover: {
+    scale: 1.3,
+    y: -50,
+    transition: { delay: 0.3, type: "tween", duration: 0.25 },
+  },
+};
 
 const rowVariants = {
   hidden: {
@@ -109,9 +125,8 @@ function Home() {
             <AnimatePresence
               initial={false}
               /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
-              onExitComplete={
-                toggleLeaving
-              } /* exitComplete는 exit가 끝나고 나서 실행된다 */
+              onExitComplete={toggleLeaving}
+              /* exitComplete는 exit가 끝나고 나서 실행된다 */
             >
               <Row
                 variants={rowVariants}
@@ -132,7 +147,11 @@ function Home() {
                   .map((movie) => (
                     <Box
                       key={movie.id}
+                      whileHover="hover"
+                      initial="normal"
+                      variants={BoxVariants}
                       bgPhoto={makeImagePath(movie.backdrop_path)}
+                      transition={{ type: "tween" }}
                     ></Box>
                   ))}
               </Row>
