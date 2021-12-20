@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { AnimatePresence, motion, useViewportScroll } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useMatch } from "react-router-dom";
 import styled from "styled-components";
@@ -107,13 +107,56 @@ const rowVariants = {
   },
 };
 
+const Overylay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+`;
+
+const BigMovie = styled(motion.div)`
+  position: fixed;
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  background-color: ${(props) => props.theme.black.lighter};
+  border-radius: 15px;
+  overflow: hidden;
+`;
+
+const BigCover = styled.div`
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center center;
+`;
+
+const BigTitle = styled.h3`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 10px;
+  font-size: 46px;
+  position: relative;
+  top: -60;
+`;
+
+const BigOverView = styled.p`
+  padding: 20px;
+  top: -60;
+  color: ${(props) => props.theme.white.lighter};
+`;
+
 const offset = 6;
 
 function Home() {
+  const { scrollY } = useViewportScroll();
   const history = useNavigate();
   const bigMovieMatch = useMatch("/movies/:movieId");
   /* useMatch는 내 url 상태를 확인하고 params도 확인 할 수 있어서 id나 key를 얻고 상호작용을 만들기 위함이다. */
-  console.log(bigMovieMatch);
+  /* console.log(bigMovieMatch); */
 
   const { data, isLoading } = useQuery<IGetMoveisResult>(
     ["movies", "nowPlaying"],
@@ -135,6 +178,15 @@ function Home() {
   const onBoxClicked = (movieId: number) => {
     history(`/movies/${movieId}`);
   };
+  const onOverlayClick = () => {
+    history("/");
+  };
+  const clickedMovie =
+    bigMovieMatch?.params.movieId &&
+    data?.results.find(
+      (movie) => movie.id + "" === bigMovieMatch.params.movieId
+    );
+
   return (
     <Wrapper>
       {isLoading ? (
@@ -192,19 +244,32 @@ function Home() {
           </Slider>
           <AnimatePresence>
             {bigMovieMatch ? (
-              <motion.div
-                layoutId={bigMovieMatch.params.movieId}
-                style={{
-                  position: "absolute",
-                  width: "40vw",
-                  height: "80vh",
-                  backgroundColor: "red",
-                  top: 50,
-                  left: 0,
-                  right: 0,
-                  margin: "0 auto",
-                }}
-              ></motion.div>
+              <>
+                <Overylay
+                  onClick={onOverlayClick}
+                  exit={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                />
+                <BigMovie
+                  style={{ top: scrollY.get() }}
+                  layoutId={bigMovieMatch.params.movieId} /* Box와 연결 */
+                >
+                  {clickedMovie && (
+                    <>
+                      <BigCover
+                        style={{
+                          backgroundImage: `linear-gradient(to top, #2f2f2f, transparent), url(${makeImagePath(
+                            clickedMovie.backdrop_path,
+                            "w500"
+                          )})`,
+                        }}
+                      />
+                      <BigTitle>{clickedMovie.title}</BigTitle>
+                      <BigOverView>{clickedMovie.overview}</BigOverView>
+                    </>
+                  )}
+                </BigMovie>
+              </>
             ) : null}
           </AnimatePresence>
         </>
