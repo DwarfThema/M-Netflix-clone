@@ -153,7 +153,7 @@ const offset = 6;
 
 function Home() {
   const { scrollY } = useViewportScroll();
-  const history = useNavigate();
+  const navigate = useNavigate();
   const bigMovieMatch = useMatch("/movies/:movieId");
   /* useMatch는 내 url 상태를 확인하고 params도 확인 할 수 있어서 id나 key를 얻고 상호작용을 만들기 위함이다. */
   /* console.log(bigMovieMatch); */
@@ -176,10 +176,10 @@ function Home() {
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
-    history(`/movies/${movieId}`);
+    navigate(`/movies/${movieId}`);
   };
   const onOverlayClick = () => {
-    history("/");
+    navigate("/");
   };
   const clickedMovie =
     bigMovieMatch?.params.movieId &&

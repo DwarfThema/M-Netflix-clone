@@ -1,8 +1,9 @@
-import { Link, useMatch } from "react-router-dom";
+import { Link, Navigate, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { motion, useAnimation, useViewportScroll } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAnimatedState } from "framer-motion/types/animation/use-animated-state";
+import { useForm } from "react-hook-form";
 
 const Nav = styled(motion.div)`
   display: flex;
@@ -56,7 +57,7 @@ const Item = styled.li`
   }
 `;
 
-const Search = styled.span`
+const Search = styled.form`
   color: white;
   display: flex;
   align-items: center;
@@ -104,6 +105,10 @@ const logoVariants = {
   },
 };
 
+interface IFrom {
+  keyword: string;
+}
+
 function Header() {
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("/tv");
@@ -136,6 +141,13 @@ function Header() {
     });
   }, [scrollY, navAnimation]);
 
+  const { register, handleSubmit } = useForm<IFrom>();
+  const navigate = useNavigate();
+  const onValid = (data: IFrom) => {
+    console.log(data);
+    navigate(`/search?keyword=${data.keyword}`);
+  };
+
   return (
     <Nav variants={navVariants} animate={navAnimation} initial={"top"}>
       <Col>
@@ -164,8 +176,9 @@ function Header() {
         </Items>
       </Col>
       <Col>
-        <Search>
+        <Search onSubmit={handleSubmit(onValid)}>
           <Input
+            {...register("keyword", { required: true, minLength: 2 })}
             initial={{ scaleX: 0 }}
             animate={inputAnimation}
             transition={{ type: "linear" }}
