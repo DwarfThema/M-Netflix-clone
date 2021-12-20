@@ -3,8 +3,13 @@ import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useMatch } from "react-router-dom";
 import styled from "styled-components";
-import { idText } from "typescript";
-import { getMovies, IGetMoveisResult, IMovies } from "../api";
+import {
+  getMovies,
+  getTopMovie,
+  getUpcomingMovie,
+  IGetMoveisResult,
+  IMovies,
+} from "../api";
 import { makeImagePath } from "../utils";
 
 const Wrapper = styled.div`
@@ -39,15 +44,27 @@ const OverView = styled.p`
   width: 50%;
 `;
 
+const Sliders = styled.div``;
+
 const Slider = styled.div`
   position: relative;
   top: -100px;
+  margin: 0 20px 200px 20px;
+`;
+
+const SliderName = styled.div`
+  font-size: 30px;
+  position: relative;
+  bottom: 110px;
+  margin: 0 20px 0px 20px;
+  background-image: url(${(props) => props.theme.white.lighter});
 `;
 
 const Row = styled(motion.div)`
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(6, 1fr);
+
   position: absolute;
   width: 100%;
 `;
@@ -110,22 +127,45 @@ const rowVariants = {
 const Overylay = styled(motion.div)`
   position: fixed;
   top: 0;
-  width: 100%;
+  left: -30px;
+  width: 120%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
 `;
 
 const BigMovie = styled(motion.div)`
-  position: fixed;
   width: 40vw;
   height: 80vh;
   left: 0;
   right: 0;
+  top: 95px;
   margin: 0 auto;
-  background-color: ${(props) => props.theme.black.lighter};
   border-radius: 15px;
   overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+const BigMovieB = styled(motion.div)`
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  top: 95px;
+  margin: 0 auto;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+const BigMovieC = styled(motion.div)`
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  top: 95px;
+  margin: 0 auto;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
 `;
 
 const BigCover = styled.div`
@@ -137,7 +177,8 @@ const BigCover = styled.div`
 
 const BigTitle = styled.h3`
   color: ${(props) => props.theme.white.lighter};
-  padding: 10px;
+  padding: 10px 20px 10px 20px;
+  font-weight: 600;
   font-size: 46px;
   position: relative;
   top: -60;
@@ -149,19 +190,41 @@ const BigOverView = styled.p`
   color: ${(props) => props.theme.white.lighter};
 `;
 
+const BigDate = styled.h3`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 0 20px 10px 20px;
+  font-size: 20px;
+`;
+
+const BigAverage = styled.h3`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 0 20px 10px 20px;
+  font-size: 20px;
+`;
+
 const offset = 6;
 
 function Home() {
-  const { scrollY } = useViewportScroll();
+  const { data, isLoading } = useQuery<IGetMoveisResult>(
+    ["movies", "nowPlaying"],
+    getMovies
+  );
+
+  const { data: topData, isLoading: topLoading } = useQuery(
+    ["topmovies", "top"],
+    getTopMovie
+  );
+
+  const { data: upCommingData, isLoading: upCommingLoading } = useQuery(
+    ["upCommingmovies", "upComming"],
+    getUpcomingMovie
+  );
+
   const navigate = useNavigate();
   const bigMovieMatch = useMatch("/movies/:movieId");
   /* useMatch는 내 url 상태를 확인하고 params도 확인 할 수 있어서 id나 key를 얻고 상호작용을 만들기 위함이다. */
   /* console.log(bigMovieMatch); */
 
-  const { data, isLoading } = useQuery<IGetMoveisResult>(
-    ["movies", "nowPlaying"],
-    getMovies
-  );
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const increaseIndex = () => {
@@ -184,7 +247,23 @@ function Home() {
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
     data?.results.find(
-      (movie) => movie.id + "" === bigMovieMatch.params.movieId
+      (movie: any) => movie.id + "" === bigMovieMatch.params.movieId
+    );
+
+  console.log(clickedMovie);
+
+  const clickedTopMovie =
+    bigMovieMatch?.params.movieId &&
+    topData?.results.find(
+      (movie: any) => movie.id + "" === bigMovieMatch.params.movieId
+    );
+
+  console.log(clickedTopMovie);
+
+  const clickedUpcommingMovie =
+    bigMovieMatch?.params.movieId &&
+    upCommingData?.results.find(
+      (movie: any) => movie.id + "" === bigMovieMatch.params.movieId
     );
 
   return (
@@ -200,78 +279,262 @@ function Home() {
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
-          <Slider>
-            <AnimatePresence
-              initial={false}
-              /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
-              onExitComplete={toggleLeaving}
-              /* exitComplete는 exit가 끝나고 나서 실행된다 */
-            >
-              <Row
-                variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                key={
-                  index
-                } /* key가 다르면 animation 시 새로운 Row 가 나오는걸로 인식 */
-                transition={{ type: "tween", duration: 1 }}
+          <Sliders>
+            <SliderName>Latest Movies</SliderName>
+            <Slider>
+              <AnimatePresence
+                initial={false}
+                /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
+                onExitComplete={toggleLeaving}
+                /* exitComplete는 exit가 끝나고 나서 실행된다 */
               >
-                {data?.results
-                  .slice(1)
-                  .slice(
-                    offset * index,
-                    offset * index + offset
-                  ) /* index는 page다 */
-                  .map((movie) => (
-                    <Box
-                      layoutId={movie.id + ""}
-                      key={movie.id}
-                      whileHover="hover"
-                      initial="normal"
-                      variants={BoxVariants}
-                      onClick={() => onBoxClicked(movie.id)}
-                      bgphoto={makeImagePath(movie.backdrop_path)}
-                      transition={{ type: "tween" }}
-                    >
-                      <Info variants={infoVariants}>
-                        <h4>{movie.title}</h4>
-                      </Info>
-                    </Box>
-                  ))}
-              </Row>
-            </AnimatePresence>
-          </Slider>
-          <AnimatePresence>
-            {bigMovieMatch ? (
-              <>
-                <Overylay
-                  onClick={onOverlayClick}
-                  exit={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-                <BigMovie
-                  style={{ top: scrollY.get() }}
-                  layoutId={bigMovieMatch.params.movieId} /* Box와 연결 */
+                <Row
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  key={
+                    index
+                  } /* key가 다르면 animation 시 새로운 Row 가 나오는걸로 인식 */
+                  transition={{ type: "tween", duration: 1 }}
                 >
-                  {clickedMovie && (
+                  {data?.results
+                    .slice(1)
+                    .slice(
+                      offset * index,
+                      offset * index + offset
+                    ) /* index는 page다 */
+                    .map((movie) => (
+                      <Box
+                        layoutId={movie.id + "1"}
+                        key={movie.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={BoxVariants}
+                        onClick={() => onBoxClicked(movie.id)}
+                        bgphoto={makeImagePath(movie.backdrop_path)}
+                        transition={{ type: "tween" }}
+                      >
+                        <Info variants={infoVariants}>
+                          <h4>{movie.title}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>{" "}
+                <AnimatePresence>
+                  {bigMovieMatch ? (
                     <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, #2f2f2f, transparent), url(${makeImagePath(
-                            clickedMovie.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
+                      <Overylay
+                        onClick={onOverlayClick}
+                        exit={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                       />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverView>{clickedMovie.overview}</BigOverView>
+                      <BigMovie
+                        style={{ zIndex: "100", position: "fixed" }}
+                        layoutId={
+                          bigMovieMatch.params.movieId + "1"
+                        } /* Box와 연결 */
+                      >
+                        {clickedMovie && (
+                          <>
+                            <BigCover
+                              style={{
+                                backgroundImage: `linear-gradient(to top, #2f2f2f, transparent), url(${makeImagePath(
+                                  clickedMovie.backdrop_path,
+                                  "w500"
+                                )})`,
+                              }}
+                            />
+                            <BigTitle>{clickedMovie.title}</BigTitle>
+                            <div>
+                              <BigDate>
+                                Release Date : {clickedMovie.release_date}
+                              </BigDate>
+                              <BigAverage>
+                                Rating : {clickedMovie.vote_average}
+                              </BigAverage>
+                              <BigOverView>{clickedMovie.overview}</BigOverView>
+                            </div>
+                          </>
+                        )}
+                      </BigMovie>
                     </>
-                  )}
-                </BigMovie>
-              </>
-            ) : null}
-          </AnimatePresence>
+                  ) : null}
+                </AnimatePresence>
+              </AnimatePresence>
+            </Slider>
+            <SliderName>Top Movies</SliderName>
+            <Slider>
+              <AnimatePresence
+                initial={false}
+                /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
+                onExitComplete={toggleLeaving}
+                /* exitComplete는 exit가 끝나고 나서 실행된다 */
+              >
+                <Row
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  key={
+                    index
+                  } /* key가 다르면 animation 시 새로운 Row 가 나오는걸로 인식 */
+                  transition={{ type: "tween", duration: 1 }}
+                >
+                  {topData?.results
+                    .slice(1)
+                    .slice(
+                      offset * index,
+                      offset * index + offset
+                    ) /* index는 page다 */
+                    .map((movie: any) => (
+                      <Box
+                        layoutId={movie.id + "2"}
+                        key={movie.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={BoxVariants}
+                        onClick={() => onBoxClicked(movie.id)}
+                        bgphoto={makeImagePath(movie.backdrop_path)}
+                        transition={{ type: "tween" }}
+                      >
+                        <Info variants={infoVariants}>
+                          <h4>{movie.title}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+                <AnimatePresence>
+                  {bigMovieMatch ? (
+                    <>
+                      <Overylay
+                        onClick={onOverlayClick}
+                        exit={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      />
+                      <BigMovieB
+                        style={{ zIndex: "100", position: "fixed" }}
+                        layoutId={
+                          bigMovieMatch.params.movieId + "2"
+                        } /* Box와 연결 */
+                      >
+                        {clickedTopMovie && (
+                          <>
+                            <BigCover
+                              style={{
+                                backgroundImage: `linear-gradient(to top, #2f2f2f, transparent), url(${makeImagePath(
+                                  clickedTopMovie.backdrop_path,
+                                  "w500"
+                                )})`,
+                              }}
+                            />
+                            <BigTitle>{clickedTopMovie.title}</BigTitle>
+                            <div>
+                              <BigDate>
+                                Release Date : {clickedTopMovie.release_date}
+                              </BigDate>
+                              <BigAverage>
+                                Rating : {clickedTopMovie.vote_average}
+                              </BigAverage>
+                              <BigOverView>
+                                {clickedTopMovie.overview}
+                              </BigOverView>
+                            </div>
+                          </>
+                        )}
+                      </BigMovieB>
+                    </>
+                  ) : null}
+                </AnimatePresence>
+              </AnimatePresence>
+            </Slider>
+            <SliderName>UpComming Movies</SliderName>
+            <Slider>
+              <AnimatePresence
+                initial={false}
+                /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
+                onExitComplete={toggleLeaving}
+                /* exitComplete는 exit가 끝나고 나서 실행된다 */
+              >
+                <Row
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  key={
+                    index
+                  } /* key가 다르면 animation 시 새로운 Row 가 나오는걸로 인식 */
+                  transition={{ type: "tween", duration: 1 }}
+                >
+                  {upCommingData?.results
+                    .slice(1)
+                    .slice(
+                      offset * index,
+                      offset * index + offset
+                    ) /* index는 page다 */
+                    .map((movie: any) => (
+                      <Box
+                        layoutId={movie.id + "3"}
+                        key={movie.id}
+                        whileHover="hover"
+                        initial="normal"
+                        variants={BoxVariants}
+                        onClick={() => onBoxClicked(movie.id)}
+                        bgphoto={makeImagePath(movie.backdrop_path)}
+                        transition={{ type: "tween" }}
+                      >
+                        <Info variants={infoVariants}>
+                          <h4>{movie.title}</h4>
+                        </Info>
+                      </Box>
+                    ))}
+                </Row>
+                <AnimatePresence>
+                  {bigMovieMatch ? (
+                    <>
+                      <Overylay
+                        onClick={onOverlayClick}
+                        exit={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      />
+                      <BigMovieC
+                        style={{ zIndex: "100", position: "fixed" }}
+                        layoutId={
+                          bigMovieMatch.params.movieId + "3"
+                        } /* Box와 연결 */
+                      >
+                        {clickedUpcommingMovie && (
+                          <>
+                            <BigCover
+                              style={{
+                                backgroundImage: `linear-gradient(to top, #2f2f2f, transparent), url(${makeImagePath(
+                                  clickedUpcommingMovie.backdrop_path,
+                                  "w500"
+                                )})`,
+                              }}
+                            />
+                            <BigTitle>{clickedUpcommingMovie.title}</BigTitle>
+                            <div>
+                              <BigDate>
+                                Release Date :{" "}
+                                {clickedUpcommingMovie.release_date}
+                              </BigDate>
+                              <BigAverage>
+                                Rating : {clickedUpcommingMovie.vote_average}
+                              </BigAverage>
+                              <BigOverView>
+                                {clickedUpcommingMovie.overview}
+                              </BigOverView>
+                            </div>
+                          </>
+                        )}
+                      </BigMovieC>
+                    </>
+                  ) : null}
+                </AnimatePresence>
+              </AnimatePresence>
+            </Slider>
+          </Sliders>
         </>
       )}
     </Wrapper>

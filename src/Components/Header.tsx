@@ -1,8 +1,7 @@
-import { Link, Navigate, useMatch, useNavigate } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { motion, useAnimation, useViewportScroll } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useAnimatedState } from "framer-motion/types/animation/use-animated-state";
 import { useForm } from "react-hook-form";
 
 const Nav = styled(motion.div)`
@@ -185,6 +184,9 @@ function Header() {
             placeholder="Search for Movie & TvShow"
           />
           <motion.svg
+            style={{
+              cursor: "pointer",
+            }}
             onClick={toggleSearch}
             animate={{ x: searchOpen ? -215 : 0 }}
             transition={{ type: "linear" }}
