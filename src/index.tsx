@@ -5,10 +5,7 @@ import { ThemeProvider } from "styled-components";
 import App from "./App";
 import { createGlobalStyle } from "styled-components";
 import { theme } from "./theme";
-<<<<<<< HEAD
-=======
 import { QueryClient, QueryClientProvider } from "react-query";
->>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -67,10 +64,7 @@ body {
   font-family: 'Source Sans Pro', sans-serif;
   color:${(props) => props.theme.white.darker};
   line-height: 1.2;
-<<<<<<< HEAD
-=======
   background-color: black;
->>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
   
 }
 a {
@@ -84,19 +78,12 @@ const client = new QueryClient();
 ReactDOM.render(
   <React.StrictMode>
     <RecoilRoot>
-<<<<<<< HEAD
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <App />
-      </ThemeProvider>
-=======
       <QueryClientProvider client={client}>
         <ThemeProvider theme={theme}>
           <GlobalStyle />
           <App />
         </ThemeProvider>
       </QueryClientProvider>
->>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
     </RecoilRoot>
   </React.StrictMode>,
   document.getElementById("root")

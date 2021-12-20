@@ -1,11 +1,8 @@
-<<<<<<< HEAD
-function Home() {
-  return <div style={{ backgroundColor: "white", height: "200vh" }}></div>;
-=======
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "react-query";
 import styled from "styled-components";
+import { idText } from "typescript";
 import { getMovies, IGetMoveisResult, IMovies } from "../api";
 import { makeImagePath } from "../utils";
 
@@ -48,15 +45,18 @@ const Slider = styled.div`
 
 const Row = styled(motion.div)`
   display: grid;
-  gap: 10px;
+  gap: 5px;
   grid-template-columns: repeat(6, 1fr);
   position: absolute;
   width: 100%;
 `;
 
-const Box = styled(motion.div)`
+const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-color: white;
-  height: 200px;
+  background-image: url(${(props) => props.bgPhoto});
+  background-size: cover;
+  background-position: center, center;
+  height: 170px;
   margin-bottom: 5px;
 `;
 
@@ -72,14 +72,26 @@ const rowVariants = {
   },
 };
 
+const offset = 6;
+
 function Home() {
   const { data, isLoading } = useQuery<IGetMoveisResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
   const [index, setIndex] = useState(0);
-  const increaseIndex = () => setIndex((prev) => prev + 1);
-
+  const [leaving, setLeaving] = useState(false);
+  const increaseIndex = () => {
+    if (data) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = data?.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      /* 이미 베너에서 쓰고있는 무비때문에 1개는 빼고 봐야함 */
+      setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+    }
+  };
+  const toggleLeaving = () => setLeaving((prev) => !prev);
   return (
     <Wrapper>
       {isLoading ? (
@@ -94,7 +106,13 @@ function Home() {
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
           <Slider>
-            <AnimatePresence>
+            <AnimatePresence
+              initial={false}
+              /* initial false는 처음에 hidden으로 시작하지 않고 visible로 마운트 할 수 있게해준다. */
+              onExitComplete={
+                toggleLeaving
+              } /* exitComplete는 exit가 끝나고 나서 실행된다 */
+            >
               <Row
                 variants={rowVariants}
                 initial="hidden"
@@ -105,9 +123,18 @@ function Home() {
                 } /* key가 다르면 animation 시 새로운 Row 가 나오는걸로 인식 */
                 transition={{ type: "tween", duration: 1 }}
               >
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Box key={i}>{i}</Box>
-                ))}
+                {data?.results
+                  .slice(1)
+                  .slice(
+                    offset * index,
+                    offset * index + offset
+                  ) /* index는 page다 */
+                  .map((movie) => (
+                    <Box
+                      key={movie.id}
+                      bgPhoto={makeImagePath(movie.backdrop_path)}
+                    ></Box>
+                  ))}
               </Row>
             </AnimatePresence>
           </Slider>
@@ -115,7 +142,6 @@ function Home() {
       )}
     </Wrapper>
   );
->>>>>>> 192ff6ca50da61e0e116f12f7654367df93d18ec
 }
 
 export default Home;
