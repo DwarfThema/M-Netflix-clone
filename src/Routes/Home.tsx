@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "react-query";
+import { useNavigate, useMatch } from "react-router-dom";
 import styled from "styled-components";
 import { idText } from "typescript";
 import { getMovies, IGetMoveisResult, IMovies } from "../api";
@@ -17,14 +18,14 @@ const Loader = styled.div`
   justify-content: center;
 `;
 
-const Banner = styled.div<{ bgPhoto: string }>`
+const Banner = styled.div<{ bgphoto: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
-    url(${(props) => props.bgPhoto});
+    url(${(props) => props.bgphoto});
   background-size: cover;
 `;
 
@@ -51,13 +52,14 @@ const Row = styled(motion.div)`
   width: 100%;
 `;
 
-const Box = styled(motion.div)<{ bgPhoto: string }>`
+const Box = styled(motion.div)<{ bgphoto: string }>`
   background-color: white;
-  background-image: url(${(props) => props.bgPhoto});
+  background-image: url(${(props) => props.bgphoto});
   background-size: cover;
   background-position: center, center;
   height: 170px;
   margin-bottom: 5px;
+  cursor: pointer;
   &:first-child {
     transform-origin: center left;
   }
@@ -108,6 +110,11 @@ const rowVariants = {
 const offset = 6;
 
 function Home() {
+  const history = useNavigate();
+  const bigMovieMatch = useMatch("/movies/:movieId");
+  /* useMatch는 내 url 상태를 확인하고 params도 확인 할 수 있어서 id나 key를 얻고 상호작용을 만들기 위함이다. */
+  console.log(bigMovieMatch);
+
   const { data, isLoading } = useQuery<IGetMoveisResult>(
     ["movies", "nowPlaying"],
     getMovies
@@ -125,6 +132,9 @@ function Home() {
     }
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
+  const onBoxClicked = (movieId: number) => {
+    history(`/movies/${movieId}`);
+  };
   return (
     <Wrapper>
       {isLoading ? (
@@ -133,7 +143,7 @@ function Home() {
         <>
           <Banner
             onClick={increaseIndex}
-            bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
+            bgphoto={makeImagePath(data?.results[0].backdrop_path || "")}
           >
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
@@ -163,11 +173,13 @@ function Home() {
                   ) /* index는 page다 */
                   .map((movie) => (
                     <Box
+                      layoutId={movie.id + ""}
                       key={movie.id}
                       whileHover="hover"
                       initial="normal"
                       variants={BoxVariants}
-                      bgPhoto={makeImagePath(movie.backdrop_path)}
+                      onClick={() => onBoxClicked(movie.id)}
+                      bgphoto={makeImagePath(movie.backdrop_path)}
                       transition={{ type: "tween" }}
                     >
                       <Info variants={infoVariants}>
@@ -178,6 +190,23 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
+          <AnimatePresence>
+            {bigMovieMatch ? (
+              <motion.div
+                layoutId={bigMovieMatch.params.movieId}
+                style={{
+                  position: "absolute",
+                  width: "40vw",
+                  height: "80vh",
+                  backgroundColor: "red",
+                  top: 50,
+                  left: 0,
+                  right: 0,
+                  margin: "0 auto",
+                }}
+              ></motion.div>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>
